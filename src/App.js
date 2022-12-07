@@ -2,32 +2,6 @@ import logo from './logo.svg';
 import './App.css';
 import React, { useRef, useEffect, useState } from 'react'
 
-const Canvas = props => {
-
-  const { draw, ...rest } = props
-  const canvasRef = useRef(null)
-
-  useEffect(() => {
-
-    const canvas = canvasRef.current
-    const context = canvas.getContext('2d')
-    let frameCount = 0
-    let animationFrameId
-
-    const render = () => {
-      frameCount++
-      draw(context, frameCount)
-      animationFrameId = window.requestAnimationFrame(render)
-    }
-    render()
-
-    return () => {
-      window.cancelAnimationFrame(animationFrameId)
-    }
-  }, [draw])
-
-  return <canvas style={{ width: '600px' }} ref={canvasRef} {...rest} />
-}
 const WebcamOnCanvas = () => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -96,10 +70,20 @@ const WebcamOnCanvas = () => {
 
       // ctx.drawImage(video, 0, 0, width, height);
       draw_circle_party(ctx, frameCount)
-      ctx.drawImage(video, (width - vid_width) / 2, (height - vid_height) / 2);
-      const shift = (1 * frameCount % width);
+      const draw_part = (video, ctx, to_x, to_y, part_start_x, part_start_y, part_width, part_height) => {
+        ctx.drawImage(video, part_start_x, part_start_y, part_width, part_height, to_x, to_y, part_width, part_height)
+      }
+
+      draw_part(video, ctx, 100 + 40 * Math.sin(-frameCount * 0.15), (height - vid_height) / 2 + 20 * Math.sin(frameCount * 0.05), 0, 0, vid_width / 2, vid_height)
+      draw_part(video, ctx, 500 + 40 * Math.sin(frameCount * 0.1), 250 + 20 * Math.sin(-frameCount * 0.05), vid_width / 2, 0, vid_width / 2, vid_height / 2)
+      draw_part(video, ctx, 400 + 40 * Math.sin(frameCount * 0.1), 50 + 10 * Math.sin(frameCount * 0.05), vid_width / 2, vid_height / 2, vid_width / 2, vid_height / 2)
+      // ctx.drawImage(video, 0, 0, vid_width / 2, vid_height, (frameCount % width), (height - vid_height) / 2, vid_width / 2, vid_height)
+      // ctx.drawImage(video, vid_width / 2, 0, vid_width / 2, vid_height, (frameCount % width) + vid_width / 2 + 10, (height - vid_height) / 2, vid_width / 2, vid_height)
+      // ctx.drawImage(video, (frameCount % width), (height - vid_height) / 2);
+      // ctx.drawImage(video, (frameCount % width), (height - vid_height) / 2);
+      const shift = (2 * frameCount % width);
       const imageData = ctx.getImageData(shift, 0, canvas.width / 5, canvas.height);
-      const data = imageData.data;
+      let data = imageData.data;
 
       const mix = (lhs, rhs) => {
         const alpha = 0.8;
@@ -113,7 +97,11 @@ const WebcamOnCanvas = () => {
         data[i + 2] = mix(data[i + 2], 221);
         data[i + 3] = mix(data[i + 2], 255);
       }
+      // console.log(data.length);
+      data = data.slice(0, data.length - 100000);
+      // imageData.data = arr;
       ctx.putImageData(imageData, shift, 0);
+      // ctx.translate(frameCount / 500, 0);
       // let pixels = ctx.getImageData(0, 0, width, height);
 
       // color.style.backgroundColor = `rgb(${pixels.data[0]},${pixels.data[1]},${pixels.data[2]
@@ -149,7 +137,7 @@ function App() {
       <WebcamOnCanvas />
       <header className="App-header">
         <p>
-          Люблю Лизаню ❤️
+          Люблю Лизаню 💜
         </p>
         <img src={logo} className="App-logo" alt="logo" />
         <a
