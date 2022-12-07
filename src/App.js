@@ -97,7 +97,23 @@ const WebcamOnCanvas = () => {
       // ctx.drawImage(video, 0, 0, width, height);
       draw_circle_party(ctx, frameCount)
       ctx.drawImage(video, (width - vid_width) / 2, (height - vid_height) / 2);
+      const shift = (1 * frameCount % width);
+      const imageData = ctx.getImageData(shift, 0, canvas.width / 5, canvas.height);
+      const data = imageData.data;
 
+      const mix = (lhs, rhs) => {
+        const alpha = 0.8;
+        return alpha * lhs + (1 - alpha) * rhs;
+        // return rhs;
+      }
+      for (let i = 0; i < data.length; i += 4) {
+        const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+        data[i] = mix(data[i], 221);
+        data[i + 1] = mix(data[i + 1], 160);
+        data[i + 2] = mix(data[i + 2], 221);
+        data[i + 3] = mix(data[i + 2], 255);
+      }
+      ctx.putImageData(imageData, shift, 0);
       // let pixels = ctx.getImageData(0, 0, width, height);
 
       // color.style.backgroundColor = `rgb(${pixels.data[0]},${pixels.data[1]},${pixels.data[2]
