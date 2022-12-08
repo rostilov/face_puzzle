@@ -46,7 +46,36 @@ const WebcamOnCanvas = () => {
         console.error("error:", err);
       });
   };
-
+  const get_tl = (center_x, center_y, width, height) => {
+    return [center_x - width / 2, center_y - height / 2];
+  }
+  class Rect {
+    // define a constructor inside class
+    constructor(tl_x, tl_y, width, height) {
+      this.tl_x = tl_x;
+      this.tl_y = tl_y;
+      this.width = width;
+      this.height = height;
+    }
+    // method show
+    // show(){
+    //   console.log(this.x, this.y);
+    // }
+  }
+  class Point {
+    // define a constructor inside class
+    constructor(x, y) {
+      this.x = x;
+      this.y = y;
+    }
+    // method show
+    // show(){
+    //   console.log(this.x, this.y);
+    // }
+  }
+  let last_rects = [];
+  let tl_points = [];
+  let min_ind = -1;
   let moving = false;
   let last_mouse_down_x = 0;
   let last_mouse_down_y = 0;
@@ -78,13 +107,47 @@ const WebcamOnCanvas = () => {
       const draw_part = (video, ctx, to_x, to_y, part_start_x, part_start_y, part_width, part_height) => {
         ctx.drawImage(video, part_start_x, part_start_y, part_width, part_height, to_x, to_y, part_width, part_height)
       }
-      const get_tl = (center_x, center_y, width, height) => {
-        return [center_x - width / 2, center_y - height / 2];
+
+
+      if (last_rects.length === 0) {
+        last_rects.push(new Rect(100, 100, vid_width / 2, vid_height));
+        last_rects.push(new Rect(400, 200, vid_width / 2, vid_height / 2));
+        last_rects.push(new Rect(600, 100, vid_width / 2, vid_height / 2));
       }
-      const [tl_x, tl_y] = get_tl(last_mouse_down_x - canvas.offsetLeft, last_mouse_down_y - canvas.offsetTop, vid_width / 2, vid_height / 2);
-      draw_part(video, ctx, 100, (height - vid_height) / 2, 0, 0, vid_width / 2, vid_height)
-      draw_part(video, ctx, 500, 250, vid_width / 2, 0, vid_width / 2, vid_height / 2)
-      draw_part(video, ctx, tl_x, tl_y, vid_width / 2, vid_height / 2, vid_width / 2, vid_height / 2)
+
+      if (tl_points.length === 0) {
+        tl_points.push(new Point(0, 0));
+        tl_points.push(new Point(vid_width / 2, 0));
+        tl_points.push(new Point(vid_width / 2, vid_height / 2));
+      }
+
+      if (last_mouse_down_x === 0) {
+        last_mouse_down_x = canvas.offsetLeft;
+      }
+      if (last_mouse_down_y === 0) {
+        last_mouse_down_y = canvas.offsetTop;
+      }
+
+
+      if (min_ind !== -1) {
+        const [tl_x, tl_y] = get_tl(last_mouse_down_x - canvas.offsetLeft, last_mouse_down_y - canvas.offsetTop, last_rects[min_ind].width, last_rects[min_ind].height);
+        last_rects[min_ind].tl_x = tl_x;
+        last_rects[min_ind].tl_y = tl_y;
+      }
+
+      for (let i = 0; i < last_rects.length; i++) {
+        console.log(i);
+        const rect = last_rects[i];
+        const tl = tl_points[i];
+        draw_part(video, ctx, rect.tl_x, rect.tl_y, tl.x, tl.y, rect.width, rect.height);
+        if ((min_ind !== -1) && (i + 1 === last_rects.length)) {
+          const rect = last_rects[min_ind];
+          const tl = tl_points[min_ind];
+          draw_part(video, ctx, rect.tl_x, rect.tl_y, tl.x, tl.y, rect.width, rect.height);
+        }
+      }
+
+
 
 
       // ctx.drawImage(video, 0, 0, vid_width / 2, vid_height, (frameCount % width), (height - vid_height) / 2, vid_width / 2, vid_height)
@@ -101,7 +164,6 @@ const WebcamOnCanvas = () => {
         // return rhs;
       }
       for (let i = 0; i < data.length; i += 4) {
-        const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
         data[i] = mix(data[i], 221);
         data[i + 1] = mix(data[i + 1], 160);
         data[i + 2] = mix(data[i + 2], 221);
@@ -144,8 +206,22 @@ const WebcamOnCanvas = () => {
   };
 
   const down = ({ nativeEvent }) => {
-    moving = true;
     const { x, y } = nativeEvent;
+    let canvas = canvasRef.current;
+
+    let min_dist = 1000000000000;
+    for (let i = 0; i < last_rects.length; i++) {
+      const d_x = (last_rects[i].tl_x + (last_rects[i].width / 2) - (x - canvas.offsetLeft));
+      const d_y = (last_rects[i].tl_y + (last_rects[i].height / 2) - (y - canvas.offsetTop));
+
+      const dist = d_x * d_x + d_y * d_y;
+      if (dist < min_dist) {
+        min_dist = dist;
+        min_ind = i;
+
+      }
+    }
+    moving = true;
     last_mouse_down_x = x;
     last_mouse_down_y = y;
   };
