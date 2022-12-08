@@ -47,6 +47,9 @@ const WebcamOnCanvas = () => {
       });
   };
 
+  let moving = false;
+  let last_mouse_down_x = 0;
+  let last_mouse_down_y = 0;
   const paintToCanvas = () => {
     let video = videoRef.current;
 
@@ -62,8 +65,10 @@ const WebcamOnCanvas = () => {
     const vid_height = video.videoHeight;
     const vid_width = video.videoWidth;
 
+
     let frameCount = 0
     setInterval(() => {
+      // return
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
       // let color = colorRef.current;
       frameCount++
@@ -73,10 +78,15 @@ const WebcamOnCanvas = () => {
       const draw_part = (video, ctx, to_x, to_y, part_start_x, part_start_y, part_width, part_height) => {
         ctx.drawImage(video, part_start_x, part_start_y, part_width, part_height, to_x, to_y, part_width, part_height)
       }
+      const get_tl = (center_x, center_y, width, height) => {
+        return [center_x - width / 2, center_y - height / 2];
+      }
+      const [tl_x, tl_y] = get_tl(last_mouse_down_x - canvas.offsetLeft, last_mouse_down_y - canvas.offsetTop, vid_width / 2, vid_height / 2);
+      draw_part(video, ctx, 100, (height - vid_height) / 2, 0, 0, vid_width / 2, vid_height)
+      draw_part(video, ctx, 500, 250, vid_width / 2, 0, vid_width / 2, vid_height / 2)
+      draw_part(video, ctx, tl_x, tl_y, vid_width / 2, vid_height / 2, vid_width / 2, vid_height / 2)
 
-      draw_part(video, ctx, 100 + 40 * Math.sin(-frameCount * 0.15), (height - vid_height) / 2 + 20 * Math.sin(frameCount * 0.05), 0, 0, vid_width / 2, vid_height)
-      draw_part(video, ctx, 500 + 40 * Math.sin(frameCount * 0.1), 250 + 20 * Math.sin(-frameCount * 0.05), vid_width / 2, 0, vid_width / 2, vid_height / 2)
-      draw_part(video, ctx, 400 + 40 * Math.sin(frameCount * 0.1), 50 + 10 * Math.sin(frameCount * 0.05), vid_width / 2, vid_height / 2, vid_width / 2, vid_height / 2)
+
       // ctx.drawImage(video, 0, 0, vid_width / 2, vid_height, (frameCount % width), (height - vid_height) / 2, vid_width / 2, vid_height)
       // ctx.drawImage(video, vid_width / 2, 0, vid_width / 2, vid_height, (frameCount % width) + vid_width / 2 + 10, (height - vid_height) / 2, vid_width / 2, vid_height)
       // ctx.drawImage(video, (frameCount % width), (height - vid_height) / 2);
@@ -101,6 +111,15 @@ const WebcamOnCanvas = () => {
       data = data.slice(0, data.length - 100000);
       // imageData.data = arr;
       ctx.putImageData(imageData, shift, 0);
+
+
+      // ctx.fillStyle = "rgb(238,0,238)"
+      // let rad = 30;
+      // ctx.moveTo(last_mouse_down_x + rad, last_mouse_down_y);
+      // ctx.arc(last_mouse_down_x - canvas.offsetLeft, last_mouse_down_y - canvas.offsetTop, rad, 0, 2 * Math.PI)
+      // ctxRef.current.closePath();
+      // setDrawing(false);
+      // ctx.fill()
       // ctx.translate(frameCount / 500, 0);
       // let pixels = ctx.getImageData(0, 0, width, height);
 
@@ -115,7 +134,24 @@ const WebcamOnCanvas = () => {
     // }, 2000);
   };
 
+  const onMouseMove = ({ nativeEvent }) => {
+    if (!moving) {
+      return
+    }
+    const { x, y } = nativeEvent;
+    last_mouse_down_x = x;
+    last_mouse_down_y = y;
+  };
 
+  const down = ({ nativeEvent }) => {
+    moving = true;
+    const { x, y } = nativeEvent;
+    last_mouse_down_x = x;
+    last_mouse_down_y = y;
+  };
+  const up = ({ nativeEvent }) => {
+    moving = false;
+  };
   return (
     <div>
       <div>
@@ -124,7 +160,12 @@ const WebcamOnCanvas = () => {
           ref={videoRef}
           className="player"
         />
-        <canvas ref={canvasRef} className="photo" />
+        <canvas
+          ref={canvasRef}
+          onMouseMove={onMouseMove}
+          onMouseDown={down}
+          onMouseUp={up}
+          className="photo" />
       </div>
     </div>
   );
