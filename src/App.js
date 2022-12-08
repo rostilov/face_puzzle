@@ -129,22 +129,25 @@ const WebcamOnCanvas = () => {
       }
 
 
-      if (min_ind !== -1) {
-        const [tl_x, tl_y] = get_tl(last_mouse_down_x - canvas.offsetLeft, last_mouse_down_y - canvas.offsetTop, last_rects[min_ind].width, last_rects[min_ind].height);
-        last_rects[min_ind].tl_x = tl_x;
-        last_rects[min_ind].tl_y = tl_y;
-      }
-
+      // if (min_ind !== -1) {
+      //   const [tl_x, tl_y] = get_tl(last_mouse_down_x - canvas.offsetLeft, last_mouse_down_y - canvas.offsetTop, last_rects[min_ind].width, last_rects[min_ind].height);
+      //   last_rects[min_ind].tl_x = tl_x;
+      //   last_rects[min_ind].tl_y = tl_y;
+      // }
+      let indexes_order = [];
       for (let i = 0; i < last_rects.length; i++) {
-        console.log(i);
-        const rect = last_rects[i];
-        const tl = tl_points[i];
-        draw_part(video, ctx, rect.tl_x, rect.tl_y, tl.x, tl.y, rect.width, rect.height);
-        if ((min_ind !== -1) && (i + 1 === last_rects.length)) {
-          const rect = last_rects[min_ind];
-          const tl = tl_points[min_ind];
-          draw_part(video, ctx, rect.tl_x, rect.tl_y, tl.x, tl.y, rect.width, rect.height);
+        if (i !== min_ind) {
+          indexes_order.push(i);
         }
+      }
+      if (min_ind !== -1) {
+        indexes_order.push(min_ind);
+      }
+      for (let i = 0; i < last_rects.length; i++) {
+        const ind = indexes_order[i]
+        const rect = last_rects[ind];
+        const tl = tl_points[ind];
+        draw_part(video, ctx, rect.tl_x, rect.tl_y, tl.x, tl.y, rect.width, rect.height);
       }
 
 
@@ -201,6 +204,11 @@ const WebcamOnCanvas = () => {
       return
     }
     const { x, y } = nativeEvent;
+
+    if (min_ind !== -1) {
+      last_rects[min_ind].tl_x = last_rects[min_ind].tl_x + (x - last_mouse_down_x);
+      last_rects[min_ind].tl_y = last_rects[min_ind].tl_y + (y - last_mouse_down_y);
+    }
     last_mouse_down_x = x;
     last_mouse_down_y = y;
   };
@@ -208,22 +216,26 @@ const WebcamOnCanvas = () => {
   const down = ({ nativeEvent }) => {
     const { x, y } = nativeEvent;
     let canvas = canvasRef.current;
-
+    const img_x = (x - canvas.offsetLeft);
+    const img_y = (y - canvas.offsetTop);
     let min_dist = 1000000000000;
     for (let i = 0; i < last_rects.length; i++) {
-      const d_x = (last_rects[i].tl_x + (last_rects[i].width / 2) - (x - canvas.offsetLeft));
-      const d_y = (last_rects[i].tl_y + (last_rects[i].height / 2) - (y - canvas.offsetTop));
+      const d_x = (last_rects[i].tl_x + (last_rects[i].width / 2) - img_x);
+      const d_y = (last_rects[i].tl_y + (last_rects[i].height / 2) - img_y);
 
       const dist = d_x * d_x + d_y * d_y;
       if (dist < min_dist) {
         min_dist = dist;
         min_ind = i;
-
       }
     }
-    moving = true;
-    last_mouse_down_x = x;
-    last_mouse_down_y = y;
+
+    if ((last_rects[min_ind].tl_x <= img_x) && (last_rects[min_ind].tl_x + last_rects[min_ind].width >= img_x) && (last_rects[min_ind].tl_y <= img_y) && (last_rects[min_ind].tl_y + last_rects[min_ind].height >= img_y)) {
+      moving = true;
+      last_mouse_down_x = x;
+      last_mouse_down_y = y;
+    }
+
   };
   const up = ({ nativeEvent }) => {
     moving = false;
