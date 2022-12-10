@@ -40,8 +40,8 @@ export function initialization(width, height, vid_width, vid_height) {
 export function draw_speed_arrow(ctx, moving, last_rects, last_speeds, min_ind) {
   if (moving && min_ind !== -1) {
     const rect = last_rects[min_ind];
-    const center_x = rect.tl_x + (rect.width / 2);
-    const center_y = rect.tl_y + (rect.height / 2);
+    const center_x = rect.tl.x + (rect.width / 2);
+    const center_y = rect.tl.y + (rect.height / 2);
     canvas_arrow(ctx, center_x, center_y, last_speeds[min_ind].x, last_speeds[min_ind].y, 10);
   }
 }

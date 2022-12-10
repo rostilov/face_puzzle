@@ -15,8 +15,8 @@ export function down_callback(state, canvasoffsetLeft, canvasoffsetTop, x, y, la
   let min_dist = 1000000000000;
   let min_ind = -1;
   for (let i = 0; i < last_rects.length; i++) {
-    const d_x = (last_rects[i].tl_x + (last_rects[i].width / 2) - img_x);
-    const d_y = (last_rects[i].tl_y + (last_rects[i].height / 2) - img_y);
+    const d_x = (last_rects[i].tl.x + (last_rects[i].width / 2) - img_x);
+    const d_y = (last_rects[i].tl.y + (last_rects[i].height / 2) - img_y);
 
     const dist = d_x * d_x + d_y * d_y;
     if (dist < min_dist) {
@@ -25,7 +25,7 @@ export function down_callback(state, canvasoffsetLeft, canvasoffsetTop, x, y, la
     }
   }
 
-  if ((last_rects[min_ind].tl_x <= img_x) && (last_rects[min_ind].tl_x + last_rects[min_ind].width >= img_x) && (last_rects[min_ind].tl_y <= img_y) && (last_rects[min_ind].tl_y + last_rects[min_ind].height >= img_y)) {
+  if ((last_rects[min_ind].tl.x <= img_x) && (last_rects[min_ind].tl.x + last_rects[min_ind].width >= img_x) && (last_rects[min_ind].tl.y <= img_y) && (last_rects[min_ind].tl.y + last_rects[min_ind].height >= img_y)) {
     state.is_moving = true;
     state.last_clicked_x = x;
     state.last_clicked_y = y;
@@ -41,8 +41,8 @@ export function move_callback(state, x, y, last_rects, last_speeds, min_ind) {
   const last_dx = x - state.last_clicked_x;
   const last_dy = y - state.last_clicked_y;
   if (min_ind !== -1) {
-    last_rects[min_ind].tl_x = last_rects[min_ind].tl_x + last_dx;
-    last_rects[min_ind].tl_y = last_rects[min_ind].tl_y + last_dy;
+    last_rects[min_ind].tl.x = last_rects[min_ind].tl.x + last_dx;
+    last_rects[min_ind].tl.y = last_rects[min_ind].tl.y + last_dy;
     last_speeds[min_ind] = new Point(last_dx, last_dy);
   }
   state.last_clicked_x = x;

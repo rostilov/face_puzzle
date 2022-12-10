@@ -3,7 +3,6 @@ export class Point {
     this.x = x;
     this.y = y;
   }
-
 }
 
 // const distance = (lhs, rhs) => {
@@ -15,14 +14,13 @@ export class Point {
 export class Rect {
   // define a constructor inside class
   constructor(tl_x, tl_y, width, height) {
-    this.tl_x = tl_x;
-    this.tl_y = tl_y;
+    this.tl = new Point(tl_x, tl_y);
     this.width = width;
     this.height = height;
   }
 
   get_vertexes() {
-    return [new Point(this.tl_x, this.tl_y), new Point(this.tl_x + this.width, this.tl_y), new Point(this.tl_x + this.width, this.tl_y + this.height), new Point(this.tl_x, this.tl_y + this.height)];
+    return [new Point(this.tl.x, this.tl.y), new Point(this.tl.x + this.width, this.tl.y), new Point(this.tl.x + this.width, this.tl.y + this.height), new Point(this.tl.x, this.tl.y + this.height)];
   }
 }
 

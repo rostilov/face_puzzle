@@ -88,10 +88,16 @@ const WebcamOnCanvas = () => {
           continue;
         }
         const speed = last_speeds[i];
+
+        // let after_update_rect = last_rects[i];
+        // after_update_rect.tl.x = after_update_rect.tl.x + speed.x;
+        // after_update_rect.tl.y = after_update_rect.tl.y + speed.y;
         for (let j = 0; j < walls.length; j++) {
           if (walls[j].is_intersecting(last_rects[i])) {
             // console.log("INTERSECTION WALL IND ", j, " RECT INDEX ", i)
             last_speeds[i] = walls[j].get_direction_after_bounce(speed);
+            // last_rects[i] = after_update_rect;
+            break;
           }
         }
       }
@@ -99,8 +105,8 @@ const WebcamOnCanvas = () => {
 
       for (let i = 0; i < last_rects.length; i++) {
         if (min_ind !== i || !mouse_state.is_moving) {
-          last_rects[i].tl_x = last_rects[i].tl_x + last_speeds[i].x;
-          last_rects[i].tl_y = last_rects[i].tl_y + last_speeds[i].y;
+          last_rects[i].tl.x = last_rects[i].tl.x + last_speeds[i].x;
+          last_rects[i].tl.y = last_rects[i].tl.y + last_speeds[i].y;
         }
       }
 
@@ -118,7 +124,7 @@ const WebcamOnCanvas = () => {
         const ind = indexes_order[i]
         const rect = last_rects[ind];
         const tl = tl_points[ind];
-        draw_part(video, ctx, rect.tl_x, rect.tl_y, tl.x, tl.y, rect.width, rect.height);
+        draw_part(video, ctx, rect.tl.x, rect.tl.y, tl.x, tl.y, rect.width, rect.height);
       }
 
       // Draw direction of current draged part
