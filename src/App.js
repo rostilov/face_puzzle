@@ -79,6 +79,9 @@ const WebcamOnCanvas = () => {
   let moving = false;
   let last_mouse_down_x = 0;
   let last_mouse_down_y = 0;
+
+  let last_dx = 0;
+  let last_dy = 0;
   const paintToCanvas = () => {
     let video = videoRef.current;
 
@@ -153,6 +156,28 @@ const WebcamOnCanvas = () => {
 
 
 
+
+
+
+      function canvas_arrow(context, fromx, fromy, dx, dy, length) {
+        context.beginPath();
+        const headlen = 10; // length of head in pixels
+        const tox = fromx + dx * length;
+        const toy = fromy + dy * length;
+        const angle = Math.atan2(dy, dx);
+        context.moveTo(fromx, fromy);
+        context.lineTo(tox, toy);
+        context.lineTo(tox - headlen * Math.cos(angle - Math.PI / 6), toy - headlen * Math.sin(angle - Math.PI / 6));
+        context.moveTo(tox, toy);
+        context.lineTo(tox - headlen * Math.cos(angle + Math.PI / 6), toy - headlen * Math.sin(angle + Math.PI / 6));
+        context.stroke();
+      }
+      if (moving) {
+        const rect = last_rects[min_ind];
+        const center_x = rect.tl_x + (rect.width / 2);
+        const center_y = rect.tl_y + (rect.height / 2);
+        canvas_arrow(ctx, center_x, center_y, last_dx, last_dy, 10);
+      }
       // ctx.drawImage(video, 0, 0, vid_width / 2, vid_height, (frameCount % width), (height - vid_height) / 2, vid_width / 2, vid_height)
       // ctx.drawImage(video, vid_width / 2, 0, vid_width / 2, vid_height, (frameCount % width) + vid_width / 2 + 10, (height - vid_height) / 2, vid_width / 2, vid_height)
       // ctx.drawImage(video, (frameCount % width), (height - vid_height) / 2);
@@ -204,10 +229,11 @@ const WebcamOnCanvas = () => {
       return
     }
     const { x, y } = nativeEvent;
-
+    last_dx = x - last_mouse_down_x;
+    last_dy = y - last_mouse_down_y;
     if (min_ind !== -1) {
-      last_rects[min_ind].tl_x = last_rects[min_ind].tl_x + (x - last_mouse_down_x);
-      last_rects[min_ind].tl_y = last_rects[min_ind].tl_y + (y - last_mouse_down_y);
+      last_rects[min_ind].tl_x = last_rects[min_ind].tl_x + last_dx;
+      last_rects[min_ind].tl_y = last_rects[min_ind].tl_y + last_dy;
     }
     last_mouse_down_x = x;
     last_mouse_down_y = y;
