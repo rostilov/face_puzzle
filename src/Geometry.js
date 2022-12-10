@@ -33,6 +33,9 @@ export class Rect {
     return new Rect(this.tl.x, this.tl.y, this.width, this.height);
   }
 
+  is_point_inside(point) {
+    return (this.tl.x <= point.x) && (this.tl.x + this.width >= point.x) && (this.tl.y <= point.y) && (this.tl.y + this.height >= point.y);
+  }
   get_vertexes() {
     return [new Point(this.tl.x, this.tl.y), new Point(this.tl.x + this.width, this.tl.y), new Point(this.tl.x + this.width, this.tl.y + this.height), new Point(this.tl.x, this.tl.y + this.height)];
   }

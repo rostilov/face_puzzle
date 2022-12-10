@@ -1,6 +1,7 @@
 import { Point, Rect } from './Geometry';
 import { Wall } from './Physics';
 import { canvas_arrow } from './DrawUtils';
+import { SceneObject } from './SceneObject';
 
 export class ObjectsState {
   constructor() {
@@ -14,6 +15,11 @@ export function initialization(width, height, vid_width, vid_height) {
   last_rects.push(new Rect(100, 100, vid_width / 2, vid_height));
   last_rects.push(new Rect(400, 200, vid_width / 2, vid_height / 2));
   last_rects.push(new Rect(550, 100, vid_width / 2, vid_height / 2));
+
+  let objects = [];
+  for (let i = 0; i < last_rects.length; i++) {
+    objects.push(new SceneObject(last_rects[i]))
+  }
 
   let last_speeds = [];
 
@@ -33,7 +39,7 @@ export function initialization(width, height, vid_width, vid_height) {
   tl_points.push(new Point(vid_width / 2, 0));
   tl_points.push(new Point(vid_width / 2, vid_height / 2));
 
-  return [last_rects, last_speeds, walls, tl_points];
+  return [objects, last_speeds, walls, tl_points];
 }
 
 

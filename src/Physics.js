@@ -61,7 +61,7 @@ export class Wall {
     return false;
   }
 
-  get_direction_after_bounce(direction) {
+  get_direction_after_collision(direction) {
     // We suppose that wall can be vertical OR horizontal. Normally you shold add orthogonal vector calculation.
     if (this.#is_wall_vertical()) {
       return new Point(-direction.x, direction.y);

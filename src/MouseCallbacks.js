@@ -10,23 +10,21 @@ export class MouseState {
 }
 
 
-export function down_callback(state, canvasoffsetLeft, canvasoffsetTop, x, y, last_rects) {
+export function down_callback(state, canvasoffsetLeft, canvasoffsetTop, x, y, objects) {
   const img_x = (x - canvasoffsetLeft);
   const img_y = (y - canvasoffsetTop);
   let min_dist = 1000000000000;
   let min_ind = -1;
-  for (let i = 0; i < last_rects.length; i++) {
-    const d_x = (last_rects[i].tl.x + (last_rects[i].width / 2) - img_x);
-    const d_y = (last_rects[i].tl.y + (last_rects[i].height / 2) - img_y);
-
+  for (let i = 0; i < objects.length; i++) {
+    const d_x = (objects[i].rect.tl.x + (objects[i].rect.width / 2) - img_x);
+    const d_y = (objects[i].rect.tl.y + (objects[i].rect.height / 2) - img_y);
     const dist = d_x * d_x + d_y * d_y;
     if (dist < min_dist) {
       min_dist = dist;
       min_ind = i;
     }
   }
-
-  if ((last_rects[min_ind].tl.x <= img_x) && (last_rects[min_ind].tl.x + last_rects[min_ind].width >= img_x) && (last_rects[min_ind].tl.y <= img_y) && (last_rects[min_ind].tl.y + last_rects[min_ind].height >= img_y)) {
+  if (objects[min_ind].rect.is_point_inside(new Point(img_x, img_y))) {
     state.is_moving = true;
     state.last_clicked_x = x;
     state.last_clicked_y = y;
@@ -35,14 +33,14 @@ export function down_callback(state, canvasoffsetLeft, canvasoffsetTop, x, y, la
 }
 
 
-export function move_callback(state, x, y, last_rects, last_speeds, walls, min_ind) {
+export function move_callback(state, x, y, objects, last_speeds, walls, min_ind) {
   if (!state.is_moving) {
     return
   }
   const last_dx = x - state.last_clicked_x;
   const last_dy = y - state.last_clicked_y;
   if (min_ind !== -1) {
-    let after_update_rect = last_rects[min_ind].deep_copy();
+    let after_update_rect = objects[min_ind].rect.deep_copy();
     after_update_rect.tl.x = after_update_rect.tl.x + last_dx;
     after_update_rect.tl.y = after_update_rect.tl.y + last_dy;
     let is_intersecting = false;
@@ -55,7 +53,7 @@ export function move_callback(state, x, y, last_rects, last_speeds, walls, min_i
     if (is_intersecting) {
       last_speeds[min_ind] = new Point(0, 0);
     } else {
-      last_rects[min_ind] = after_update_rect;
+      objects[min_ind].rect = after_update_rect;
       last_speeds[min_ind] = new Point(last_dx, last_dy);
       const norm = last_speeds[min_ind].norm();
       if (norm > MAX_ALLOWED_SPEED) {
