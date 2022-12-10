@@ -48,8 +48,8 @@ const WebcamOnCanvas = () => {
     canvas.style.backgroundColor = 'rgb(138,43,226)'
     let ctx = canvas.getContext("2d");
 
-    const width = 800;
-    const height = 450;
+    const width = 900;
+    const height = 600;
     canvas.width = width;
     canvas.height = height;
     const vid_height = video.videoHeight;
@@ -100,12 +100,15 @@ const WebcamOnCanvas = () => {
         }
       }
 
-
+      const DUMP_FACTOR = 1.003
       for (let i = 0; i < last_rects.length; i++) {
         if (min_ind !== i || !mouse_state.is_moving) {
           last_rects[i].tl.x = last_rects[i].tl.x + last_speeds[i].x;
           last_rects[i].tl.y = last_rects[i].tl.y + last_speeds[i].y;
         }
+
+        last_speeds[i].x = last_speeds[i].x / DUMP_FACTOR;
+        last_speeds[i].y = last_speeds[i].y / DUMP_FACTOR;
       }
 
       // We need indexes order to guarantee that current "draged" part is on top of others
@@ -126,7 +129,7 @@ const WebcamOnCanvas = () => {
       }
 
       // Draw direction of current draged part
-      draw_speed_arrow(ctx, mouse_state.is_moving, last_rects, last_speeds, min_ind);
+      // draw_speed_arrow(ctx, mouse_state.is_moving, last_rects, last_speeds, min_ind);
 
       // Draw moving purple line
       draw_sector_line(ctx, 2 * frameCount % width);
@@ -136,7 +139,7 @@ const WebcamOnCanvas = () => {
 
   const move = ({ nativeEvent }) => {
     const { x, y } = nativeEvent;
-    move_callback(mouse_state, x, y, last_rects, last_speeds, min_ind);
+    move_callback(mouse_state, x, y, last_rects, last_speeds, walls, min_ind);
   };
 
   const down = ({ nativeEvent }) => {

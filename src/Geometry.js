@@ -1,15 +1,21 @@
-export class Point {
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
-  }
-}
 
 // const distance = (lhs, rhs) => {
 //   const dx = (lhs.x - rhs.x);
 //   const dy = (lhs.y - rhs.y);
 //   return Math.sqrt(dx * dx + dy * dy);
 // }
+export class Point {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  norm() {
+    return Math.sqrt(this.x * this.x + this.y * this.y);
+  }
+}
+
+
 
 export class Rect {
   // define a constructor inside class
