@@ -19,6 +19,14 @@ export class Rect {
     this.height = height;
   }
 
+  print(prefix) {
+    console.log(prefix, this.tl.x, this.tl.y, this.width, this.height);
+  }
+
+  deep_copy() {
+    return new Rect(this.tl.x, this.tl.y, this.width, this.height);
+  }
+
   get_vertexes() {
     return [new Point(this.tl.x, this.tl.y), new Point(this.tl.x + this.width, this.tl.y), new Point(this.tl.x + this.width, this.tl.y + this.height), new Point(this.tl.x, this.tl.y + this.height)];
   }

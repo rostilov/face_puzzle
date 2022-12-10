@@ -40,8 +40,12 @@ export class Wall {
       }
       return true;
     }
+    if (this.#is_wall_vertical()) {
+      return check_field('x');
+    } else {
+      return check_field('y');
+    }
 
-    return check_field('x') && check_field('y');
   }
 
   is_intersecting(rect) {

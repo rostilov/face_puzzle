@@ -89,14 +89,12 @@ const WebcamOnCanvas = () => {
         }
         const speed = last_speeds[i];
 
-        // let after_update_rect = last_rects[i];
-        // after_update_rect.tl.x = after_update_rect.tl.x + speed.x;
-        // after_update_rect.tl.y = after_update_rect.tl.y + speed.y;
+        let after_update_rect = last_rects[i].deep_copy();
+        after_update_rect.tl.x = after_update_rect.tl.x + speed.x;
+        after_update_rect.tl.y = after_update_rect.tl.y + speed.y;
         for (let j = 0; j < walls.length; j++) {
-          if (walls[j].is_intersecting(last_rects[i])) {
-            // console.log("INTERSECTION WALL IND ", j, " RECT INDEX ", i)
+          if (walls[j].is_intersecting(after_update_rect)) {
             last_speeds[i] = walls[j].get_direction_after_bounce(speed);
-            // last_rects[i] = after_update_rect;
             break;
           }
         }
