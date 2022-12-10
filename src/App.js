@@ -1,6 +1,88 @@
 import logo from './logo.svg';
 import './App.css';
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useEffect } from 'react'
+
+
+
+class Point {
+  // define a constructor inside class
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+  // method show
+  // show(){
+  //   console.log(this.x, this.y);
+  // }
+}
+
+// const distance = (lhs, rhs) => {
+//   const dx = (lhs.x - rhs.x);
+//   const dy = (lhs.y - rhs.y);
+//   return Math.sqrt(dx * dx + dy * dy);
+// }
+
+class Rect {
+  // define a constructor inside class
+  constructor(tl_x, tl_y, width, height) {
+    this.tl_x = tl_x;
+    this.tl_y = tl_y;
+    this.width = width;
+    this.height = height;
+  }
+
+  get_vertexes() {
+    return [new Point(this.tl_x, this.tl_y), new Point(this.tl_x + this.width, this.tl_y), new Point(this.tl_x + this.width, this.tl_y + this.height), new Point(this.tl_x, this.tl_y + this.height)];
+  }
+  // method show
+  // show(){
+  //   console.log(this.x, this.y);
+  // }
+}
+
+
+
+class Wall {
+  // define a constructor inside class
+  constructor(lhs_point, rhs_point) {
+    this.lhs = lhs_point;
+    this.rhs = rhs_point;
+  }
+
+  distance(point) {
+    const dx = this.rhs.x - this.lhs.x;
+    const dy = this.rhs.y - this.lhs.y;
+    return Math.abs(dx * (this.lhs.y - point.y) - dy * (this.lhs.x - point.x)) / Math.sqrt(dx * dx + dy * dy);
+  }
+
+  is_intersecting(rect) {
+    const vertexes = rect.get_vertexes();
+    for (let i = 0; i < vertexes.length; i++) {
+      if (this.distance(vertexes[i]) <= 1) {
+        // console.log("INTERSECTION ", this.distance(vertexes[i]), i, vertexes[i].x, vertexes[i].y)
+        return true;
+      }
+    }
+    return false;
+  }
+
+  get_direction_after_bounce(direction) {
+    const dx = this.rhs.x - this.lhs.x;
+    const dy = this.rhs.y - this.lhs.y;
+    // We suppose that wall can be vertical OR horizontal. Normally you shold add orthogonal vector calculation.
+    let is_wall_vertical = Math.abs(dx) < Math.abs(dy);
+    if (is_wall_vertical) {
+      return new Point(-direction.x, direction.y);
+    } else {
+      return new Point(direction.x, -direction.y);
+    }
+  }
+  // method show
+  // show(){
+  //   console.log(this.x, this.y);
+  // }
+}
+
 
 const WebcamOnCanvas = () => {
   const videoRef = useRef(null);
@@ -19,7 +101,7 @@ const WebcamOnCanvas = () => {
     const pixel_step = 20
     for (const x of Array(ctx.canvas.width).keys()) {
       for (const y of Array(ctx.canvas.height).keys()) {
-        if ((x % pixel_step == 0) && (y % pixel_step == 0)) {
+        if ((x % pixel_step === 0) && (y % pixel_step === 0)) {
           draw_circle(ctx, frameCount, x, y, (x + y) / 500)
         }
       }
@@ -46,36 +128,14 @@ const WebcamOnCanvas = () => {
         console.error("error:", err);
       });
   };
-  const get_tl = (center_x, center_y, width, height) => {
-    return [center_x - width / 2, center_y - height / 2];
-  }
-  class Rect {
-    // define a constructor inside class
-    constructor(tl_x, tl_y, width, height) {
-      this.tl_x = tl_x;
-      this.tl_y = tl_y;
-      this.width = width;
-      this.height = height;
-    }
-    // method show
-    // show(){
-    //   console.log(this.x, this.y);
-    // }
-  }
-  class Point {
-    // define a constructor inside class
-    constructor(x, y) {
-      this.x = x;
-      this.y = y;
-    }
-    // method show
-    // show(){
-    //   console.log(this.x, this.y);
-    // }
-  }
+  // const get_tl = (center_x, center_y, width, height) => {
+  //   return [center_x - width / 2, center_y - height / 2];
+  // }
+
   let last_rects = [];
   let last_speeds = [];
   let tl_points = [];
+  let walls = [];
   let min_ind = -1;
   let moving = false;
   let last_mouse_down_x = 0;
@@ -116,14 +176,19 @@ const WebcamOnCanvas = () => {
       if (last_rects.length === 0) {
         last_rects.push(new Rect(100, 100, vid_width / 2, vid_height));
         last_rects.push(new Rect(400, 200, vid_width / 2, vid_height / 2));
-        last_rects.push(new Rect(600, 100, vid_width / 2, vid_height / 2));
+        last_rects.push(new Rect(550, 100, vid_width / 2, vid_height / 2));
       }
       if (last_speeds.length === 0) {
         last_speeds.push(new Point(0, 0));
         last_speeds.push(new Point(0, 0));
         last_speeds.push(new Point(0, 0));
       }
-
+      if (walls.length === 0) {
+        walls.push(new Wall(new Point(0, 0), new Point(width, 0)));
+        walls.push(new Wall(new Point(width, 0), new Point(width, height)));
+        walls.push(new Wall(new Point(width, height), new Point(0, height)));
+        walls.push(new Wall(new Point(0, height), new Point(0, 0)));
+      }
       if (tl_points.length === 0) {
         tl_points.push(new Point(0, 0));
         tl_points.push(new Point(vid_width / 2, 0));
@@ -143,6 +208,22 @@ const WebcamOnCanvas = () => {
       //   last_rects[min_ind].tl_x = tl_x;
       //   last_rects[min_ind].tl_y = tl_y;
       // }
+
+
+      for (let i = 0; i < last_speeds.length; i++) {
+        if (moving && i === min_ind) {
+          continue;
+        }
+        const speed = last_speeds[i];
+        for (let j = 0; j < walls.length; j++) {
+          if (walls[j].is_intersecting(last_rects[i])) {
+            // console.log("INTERSECTION WALL IND ", j, " RECT INDEX ", i)
+            last_speeds[i] = walls[j].get_direction_after_bounce(speed);
+          }
+        }
+      }
+
+
       for (let i = 0; i < last_rects.length; i++) {
         if (min_ind !== i || !moving) {
           last_rects[i].tl_x = last_rects[i].tl_x + last_speeds[i].x;
