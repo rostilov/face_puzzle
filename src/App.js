@@ -1,11 +1,8 @@
 import './App.css';
 import React, { useRef, useEffect } from 'react'
-import { initialization } from './Render';
-import { canvas_arrow, draw_circle_party, draw_sector_line } from './DrawUtils';
-import { Point } from './Geometry';
-
-
-
+import { initialization, draw_speed_arrow } from './Render';
+import { draw_circle_party, draw_sector_line } from './DrawUtils';
+import { down_callback, move_callback, MouseState } from './MouseCallbacks';
 
 const WebcamOnCanvas = () => {
   const videoRef = useRef(null);
@@ -39,13 +36,9 @@ const WebcamOnCanvas = () => {
   let tl_points = [];
   let walls = [];
   let min_ind = -1;
-  let moving = false;
-  let last_mouse_down_x = 0;
-  let last_mouse_down_y = 0;
 
-  let last_dx = 0;
-  let last_dy = 0;
   let is_initialized = false;
+  let mouse_state = new MouseState();
 
 
   const paintToCanvas = () => {
@@ -81,17 +74,17 @@ const WebcamOnCanvas = () => {
         is_initialized = true;
       }
 
-      if (last_mouse_down_x === 0) {
-        last_mouse_down_x = ctx.canvas.offsetLeft;
+      if (mouse_state.last_clicked_x === 0) {
+        mouse_state.last_clicked_x = ctx.canvas.offsetLeft;
       }
-      if (last_mouse_down_y === 0) {
-        last_mouse_down_y = ctx.canvas.offsetTop;
+      if (mouse_state.last_clicked_y === 0) {
+        mouse_state.last_clicked_y = ctx.canvas.offsetTop;
       }
 
 
       // Check bounces
       for (let i = 0; i < last_speeds.length; i++) {
-        if (moving && i === min_ind) {
+        if (mouse_state.is_moving && (i === min_ind)) {
           continue;
         }
         const speed = last_speeds[i];
@@ -105,7 +98,7 @@ const WebcamOnCanvas = () => {
 
 
       for (let i = 0; i < last_rects.length; i++) {
-        if (min_ind !== i || !moving) {
+        if (min_ind !== i || !mouse_state.is_moving) {
           last_rects[i].tl_x = last_rects[i].tl_x + last_speeds[i].x;
           last_rects[i].tl_y = last_rects[i].tl_y + last_speeds[i].y;
         }
@@ -129,12 +122,7 @@ const WebcamOnCanvas = () => {
       }
 
       // Draw direction of current draged part
-      if (moving) {
-        const rect = last_rects[min_ind];
-        const center_x = rect.tl_x + (rect.width / 2);
-        const center_y = rect.tl_y + (rect.height / 2);
-        canvas_arrow(ctx, center_x, center_y, last_speeds[min_ind].x, last_speeds[min_ind].y, 10);
-      }
+      draw_speed_arrow(ctx, mouse_state.is_moving, last_rects, last_speeds, min_ind);
 
       // Draw moving purple line
       draw_sector_line(ctx, 2 * frameCount % width);
@@ -143,48 +131,18 @@ const WebcamOnCanvas = () => {
   };
 
   const move = ({ nativeEvent }) => {
-    if (!moving) {
-      return
-    }
     const { x, y } = nativeEvent;
-    last_dx = x - last_mouse_down_x;
-    last_dy = y - last_mouse_down_y;
-    if (min_ind !== -1) {
-      last_rects[min_ind].tl_x = last_rects[min_ind].tl_x + last_dx;
-      last_rects[min_ind].tl_y = last_rects[min_ind].tl_y + last_dy;
-      last_speeds[min_ind] = new Point(last_dx, last_dy);
-    }
-    last_mouse_down_x = x;
-    last_mouse_down_y = y;
+    move_callback(mouse_state, x, y, last_rects, last_speeds, min_ind);
   };
 
   const down = ({ nativeEvent }) => {
     const { x, y } = nativeEvent;
-    let canvas = canvasRef.current;
-    const img_x = (x - canvas.offsetLeft);
-    const img_y = (y - canvas.offsetTop);
-    let min_dist = 1000000000000;
-    for (let i = 0; i < last_rects.length; i++) {
-      const d_x = (last_rects[i].tl_x + (last_rects[i].width / 2) - img_x);
-      const d_y = (last_rects[i].tl_y + (last_rects[i].height / 2) - img_y);
-
-      const dist = d_x * d_x + d_y * d_y;
-      if (dist < min_dist) {
-        min_dist = dist;
-        min_ind = i;
-      }
-    }
-
-    if ((last_rects[min_ind].tl_x <= img_x) && (last_rects[min_ind].tl_x + last_rects[min_ind].width >= img_x) && (last_rects[min_ind].tl_y <= img_y) && (last_rects[min_ind].tl_y + last_rects[min_ind].height >= img_y)) {
-      moving = true;
-      last_mouse_down_x = x;
-      last_mouse_down_y = y;
-    }
-
+    min_ind = down_callback(mouse_state, canvasRef.current.offsetLeft, canvasRef.current.offsetTop, x, y, last_rects);
   };
   const up = ({ nativeEvent }) => {
-    moving = false;
+    mouse_state.is_moving = false;
   };
+
   return (
     <div>
       <div>
