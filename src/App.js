@@ -74,6 +74,7 @@ const WebcamOnCanvas = () => {
     // }
   }
   let last_rects = [];
+  let last_speeds = [];
   let tl_points = [];
   let min_ind = -1;
   let moving = false;
@@ -117,6 +118,11 @@ const WebcamOnCanvas = () => {
         last_rects.push(new Rect(400, 200, vid_width / 2, vid_height / 2));
         last_rects.push(new Rect(600, 100, vid_width / 2, vid_height / 2));
       }
+      if (last_speeds.length === 0) {
+        last_speeds.push(new Point(0, 0));
+        last_speeds.push(new Point(0, 0));
+        last_speeds.push(new Point(0, 0));
+      }
 
       if (tl_points.length === 0) {
         tl_points.push(new Point(0, 0));
@@ -137,6 +143,13 @@ const WebcamOnCanvas = () => {
       //   last_rects[min_ind].tl_x = tl_x;
       //   last_rects[min_ind].tl_y = tl_y;
       // }
+      for (let i = 0; i < last_rects.length; i++) {
+        if (min_ind !== i || !moving) {
+          last_rects[i].tl_x = last_rects[i].tl_x + last_speeds[i].x;
+          last_rects[i].tl_y = last_rects[i].tl_y + last_speeds[i].y;
+        }
+      }
+
       let indexes_order = [];
       for (let i = 0; i < last_rects.length; i++) {
         if (i !== min_ind) {
@@ -234,6 +247,7 @@ const WebcamOnCanvas = () => {
     if (min_ind !== -1) {
       last_rects[min_ind].tl_x = last_rects[min_ind].tl_x + last_dx;
       last_rects[min_ind].tl_y = last_rects[min_ind].tl_y + last_dy;
+      last_speeds[min_ind] = new Point(last_dx, last_dy);
     }
     last_mouse_down_x = x;
     last_mouse_down_y = y;
