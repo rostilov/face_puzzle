@@ -91,8 +91,7 @@ const WebcamOnCanvas = () => {
         const speed = last_speeds[i];
 
         let after_update_rect = objects[i].rect.deep_copy();
-        after_update_rect.tl.x = after_update_rect.tl.x + speed.x;
-        after_update_rect.tl.y = after_update_rect.tl.y + speed.y;
+        after_update_rect.translate(speed);
         const object_after_update = new SceneObject(after_update_rect);
         let bounced = false;
         for (let j = 0; j < walls.length; j++) {
@@ -121,9 +120,7 @@ const WebcamOnCanvas = () => {
           objects[i].rect.tl.x = objects[i].rect.tl.x + last_speeds[i].x;
           objects[i].rect.tl.y = objects[i].rect.tl.y + last_speeds[i].y;
         }
-
-        last_speeds[i].x = last_speeds[i].x / DUMP_FACTOR;
-        last_speeds[i].y = last_speeds[i].y / DUMP_FACTOR;
+        last_speeds[i] = last_speeds[i].scale(1 / DUMP_FACTOR);
       }
 
       // We need indexes order to guarantee that current "draged" part is on top of others

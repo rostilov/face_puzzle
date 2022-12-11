@@ -10,6 +10,9 @@ export class Point {
     this.y = y;
   }
 
+  scale(scale) {
+    return new Point(this.x * scale, this.y * scale);
+  }
   norm() {
     return Math.sqrt(this.x * this.x + this.y * this.y);
   }
@@ -33,6 +36,10 @@ export class Rect {
     return new Rect(this.tl.x, this.tl.y, this.width, this.height);
   }
 
+  translate(shift_vector) {
+    this.tl.x = this.tl.x + shift_vector.x;
+    this.tl.y = this.tl.y + shift_vector.y;
+  }
   is_point_inside(point) {
     return (this.tl.x <= point.x) && (this.tl.x + this.width >= point.x) && (this.tl.y <= point.y) && (this.tl.y + this.height >= point.y);
   }

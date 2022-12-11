@@ -39,10 +39,19 @@ export function move_callback(state, x, y, objects, last_speeds, walls, min_ind)
   }
   const last_dx = x - state.last_clicked_x;
   const last_dy = y - state.last_clicked_y;
+
+  const speed = new Point(last_dx, last_dy);
+  const norm = speed.norm();
+  let scale = 1.;
+  if (norm > MAX_ALLOWED_SPEED) {
+    scale = norm / MAX_ALLOWED_SPEED;
+  }
+
+  const trimmed_speed = speed.scale(1 / scale);
+
   if (min_ind !== -1) {
     let after_update_rect = objects[min_ind].rect.deep_copy();
-    after_update_rect.tl.x = after_update_rect.tl.x + last_dx;
-    after_update_rect.tl.y = after_update_rect.tl.y + last_dy;
+    after_update_rect.translate(speed);
     const object_after_update = new SceneObject(after_update_rect);
 
     let is_intersecting = false;
@@ -66,16 +75,8 @@ export function move_callback(state, x, y, objects, last_speeds, walls, min_ind)
     if (is_intersecting) {
       last_speeds[min_ind] = new Point(0, 0);
     } else {
-
-
       objects[min_ind].rect = after_update_rect;
-      last_speeds[min_ind] = new Point(last_dx, last_dy);
-      const norm = last_speeds[min_ind].norm();
-      if (norm > MAX_ALLOWED_SPEED) {
-        const scale = norm / MAX_ALLOWED_SPEED;
-        last_speeds[min_ind].x = last_speeds[min_ind].x / scale;
-        last_speeds[min_ind].y = last_speeds[min_ind].y / scale;
-      }
+      last_speeds[min_ind] = trimmed_speed;
     }
   }
   state.last_clicked_x = x;
