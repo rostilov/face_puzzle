@@ -65,6 +65,7 @@ export function move_callback(state, x, y, objects, last_speeds, walls, min_ind)
     }
 
     if (!is_intersecting) {
+      let neighbours_to_change = []
       for (let j = 0; j < objects.length; j++) {
         if (min_ind === j) {
           continue;
@@ -84,9 +85,15 @@ export function move_callback(state, x, y, objects, last_speeds, walls, min_ind)
             is_intersecting = true;
             break;
           }
-          objects[j] = object_after_shift;
-          last_speeds[j] = trimmed_speed;
-          break;
+          neighbours_to_change.push({ 'index': j, 'new_object': object_after_shift });
+        }
+      }
+
+      if (!is_intersecting) {
+        for (let j = 0; j < neighbours_to_change.length; j++) {
+          const item = neighbours_to_change[j]
+          objects[item.index] = item.new_object;
+          last_speeds[item.index] = trimmed_speed;
         }
       }
     }
