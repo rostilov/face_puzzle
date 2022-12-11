@@ -8,6 +8,9 @@ export class SceneObject {
   }
 
 
+  deep_copy() {
+    return new SceneObject(this.rect.deep_copy());
+  }
 
   is_intersecting(object) {
     return this.#is_intersecting_not_symmetric(object) || object.#is_intersecting_not_symmetric(this)

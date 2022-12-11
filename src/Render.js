@@ -45,6 +45,28 @@ export function initialization(width, height, vid_width, vid_height) {
   return [objects, last_speeds, walls, tl_points];
 }
 
+export function check_walls_intersection_indexes(object, walls) {
+  let result = []
+  for (let j = 0; j < walls.length; j++) {
+    if (walls[j].is_intersecting(object.rect)) {
+      result.push(j);
+    }
+  }
+  return result;
+}
+
+export function check_objects_intersection_indexes(object, object_index, objects) {
+  let result = []
+  for (let j = 0; j < objects.length; j++) {
+    if (object_index === j) {
+      continue;
+    }
+    if (objects[j].is_intersecting(object)) {
+      result.push(j);
+    }
+  }
+  return result;
+}
 
 export function draw_speed_arrow(ctx, moving, last_rects, last_speeds, min_ind) {
   if (moving && min_ind !== -1) {

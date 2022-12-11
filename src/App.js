@@ -4,7 +4,7 @@ import { initialization } from './Render';
 import { draw_circle_party, draw_sector_line } from './DrawUtils';
 import { down_callback, move_callback, MouseState } from './MouseCallbacks';
 import { SceneObject } from './SceneObject';
-
+import { check_walls_intersection_indexes, check_objects_intersection_indexes } from './Render';
 const WebcamOnCanvas = () => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -94,22 +94,17 @@ const WebcamOnCanvas = () => {
         after_update_rect.translate(speed);
         const object_after_update = new SceneObject(after_update_rect);
         let bounced = false;
-        for (let j = 0; j < walls.length; j++) {
-          if (walls[j].is_intersecting(after_update_rect)) {
-            last_speeds[i] = walls[j].get_direction_after_collision(speed);
-            bounced = true;
-            break;
-          }
+        const walls_indexes = check_walls_intersection_indexes(object_after_update, walls);
+        if (walls_indexes.length > 0) {
+          // TODO. Not properly working if several walls are intersected
+          last_speeds[i] = walls[walls_indexes[0]].get_direction_after_collision(speed);
+          bounced = true;
         }
         if (!bounced) {
-          for (let j = 0; j < objects.length; j++) {
-            if (i === j) {
-              continue;
-            }
-            if (objects[j].is_intersecting(object_after_update)) {
-              last_speeds[i] = objects[j].get_direction_after_collision(speed);
-              break;
-            }
+          const objects_indexes = check_objects_intersection_indexes(object_after_update, i, objects);
+          if (objects_indexes.length > 0) {
+            // TODO. Not properly working if several objects are intersected
+            last_speeds[i] = objects[objects_indexes[0]].get_direction_after_collision(speed);
           }
         }
       }

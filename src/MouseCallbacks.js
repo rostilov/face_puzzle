@@ -1,5 +1,7 @@
 import { Point } from './Geometry';
 import { SceneObject } from './SceneObject';
+import { check_walls_intersection_indexes, check_objects_intersection_indexes } from './Render';
+
 const MAX_ALLOWED_SPEED = 30.
 export class MouseState {
   constructor() {
@@ -68,7 +70,23 @@ export function move_callback(state, x, y, objects, last_speeds, walls, min_ind)
           continue;
         }
         if (objects[j].is_intersecting(object_after_update)) {
-          is_intersecting = true;
+          let object_after_shift = objects[j].deep_copy();
+          object_after_shift.rect.translate(speed);
+
+
+          const walls_indexes = check_walls_intersection_indexes(object_after_shift, walls);
+          if (walls_indexes.length > 0) {
+            is_intersecting = true;
+            break;
+          }
+          const objects_indexes = check_objects_intersection_indexes(object_after_shift, j, objects);
+          if (objects_indexes.length > 0) {
+            is_intersecting = true;
+            break;
+          }
+          objects[j] = object_after_shift;
+          last_speeds[j] = trimmed_speed;
+          break;
         }
       }
     }
