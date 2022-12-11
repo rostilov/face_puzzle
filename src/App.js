@@ -135,6 +135,44 @@ const WebcamOnCanvas = () => {
         draw_part(video, ctx, rect.tl.x, rect.tl.y, tl.x, tl.y, rect.width, rect.height);
       }
 
+      //Draw closest side
+
+
+
+
+      if (min_ind !== -1) {
+        const sides = objects[min_ind].rect.get_sides();
+        let min_pair = [-1, -1];
+        let min_index = -1;
+        let min_dist = 100000000000;
+        for (let i = 0; i < objects.length; i++) {
+          if (i === min_ind) {
+            continue;
+          }
+
+          const [closest_indexes, closest_dist] = objects[min_ind].get_closest(objects[i]);
+          if (closest_dist < min_dist) {
+            min_dist = closest_dist;
+            min_pair = closest_indexes;
+            min_index = i;
+          }
+        }
+        ctx.beginPath();
+        const start = sides[min_pair[0]][0];
+        const end = sides[min_pair[0]][1];
+        ctx.moveTo(start.x, start.y);
+        ctx.lineTo(end.x, end.y);
+        const sides2 = objects[min_index].rect.get_sides();
+        const start2 = sides2[min_pair[1]][0];
+        const end2 = sides2[min_pair[1]][1];
+        ctx.moveTo(start2.x, start2.y);
+        ctx.lineTo(end2.x, end2.y);
+        ctx.lineWidth = 10;
+        ctx.strokeStyle = 'rgb(0, 255, 0)';
+        ctx.stroke();
+      }
+
+
       // Draw direction of current draged part
       // draw_speed_arrow(ctx, mouse_state.is_moving, last_rects, last_speeds, min_ind);
 

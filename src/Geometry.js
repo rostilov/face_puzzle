@@ -1,9 +1,4 @@
 
-// const distance = (lhs, rhs) => {
-//   const dx = (lhs.x - rhs.x);
-//   const dy = (lhs.y - rhs.y);
-//   return Math.sqrt(dx * dx + dy * dy);
-// }
 export class Point {
   constructor(x, y) {
     this.x = x;
@@ -17,7 +12,11 @@ export class Point {
     return Math.sqrt(this.x * this.x + this.y * this.y);
   }
 }
-
+export function distance(lhs, rhs) {
+  const dx = (lhs.x - rhs.x);
+  const dy = (lhs.y - rhs.y);
+  return Math.sqrt(dx * dx + dy * dy);
+}
 
 
 export class Rect {
@@ -45,6 +44,11 @@ export class Rect {
   }
   get_vertexes() {
     return [new Point(this.tl.x, this.tl.y), new Point(this.tl.x + this.width, this.tl.y), new Point(this.tl.x + this.width, this.tl.y + this.height), new Point(this.tl.x, this.tl.y + this.height)];
+  }
+
+  get_sides() {
+    const vertexes = this.get_vertexes();
+    return [[vertexes[0], vertexes[1]], [vertexes[1], vertexes[2]], [vertexes[2], vertexes[3]], [vertexes[3], vertexes[0]]];
   }
 }
 
