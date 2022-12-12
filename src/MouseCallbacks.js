@@ -54,7 +54,7 @@ export function move_callback(state, x, y, objects, last_speeds, walls, min_ind)
   if (min_ind !== -1) {
     let after_update_rect = objects[min_ind].rect.deep_copy();
     after_update_rect.translate(speed);
-    const object_after_update = new SceneObject(after_update_rect);
+    const object_after_update = new SceneObject(after_update_rect, objects[min_ind].original_video_point);
 
     let is_intersecting = false;
     for (let j = 0; j < walls.length; j++) {

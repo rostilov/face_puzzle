@@ -5,6 +5,10 @@ export class Point {
     this.y = y;
   }
 
+  deep_copy() {
+    return new Point(this.x, this.y);
+  }
+
   scale(scale) {
     return new Point(this.x * scale, this.y * scale);
   }

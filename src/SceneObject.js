@@ -2,14 +2,15 @@ import { Point, distance } from './Geometry';
 
 export class SceneObject {
   // define a constructor inside class
-  constructor(rect) {
+  constructor(rect, original_video_point) {
     this.rect = rect.deep_copy();
     this.mass = rect.width * rect.height;
+    this.original_video_point = original_video_point.deep_copy();
   }
 
 
   deep_copy() {
-    return new SceneObject(this.rect.deep_copy());
+    return new SceneObject(this.rect.deep_copy(), this.original_video_point.deep_copy());
   }
 
   is_intersecting(object) {
@@ -49,4 +50,10 @@ export class SceneObject {
     return new Point(-direction.x, -direction.y)
   }
 
+  draw(video, ctx) {
+    const draw_part = (video, ctx, tl, part_start_point, part_width, part_height) => {
+      ctx.drawImage(video, part_start_point.x, part_start_point.y, part_width, part_height, tl.x, tl.y, part_width, part_height)
+    }
+    draw_part(video, ctx, this.rect.tl, this.original_video_point, this.rect.width, this.rect.height);
+  }
 }

@@ -34,7 +34,6 @@ const WebcamOnCanvas = () => {
 
   let objects = [];
   let last_speeds = [];
-  let tl_points = [];
   let walls = [];
   let min_ind = -1;
 
@@ -71,7 +70,7 @@ const WebcamOnCanvas = () => {
       }
 
       if (!is_initialized) {
-        [objects, last_speeds, walls, tl_points] = initialization(width, height, vid_width, vid_height);
+        [objects, last_speeds, walls] = initialization(width, height, vid_width, vid_height);
         is_initialized = true;
       }
 
@@ -92,7 +91,7 @@ const WebcamOnCanvas = () => {
 
         let after_update_rect = objects[i].rect.deep_copy();
         after_update_rect.translate(speed);
-        const object_after_update = new SceneObject(after_update_rect);
+        const object_after_update = new SceneObject(after_update_rect, objects[i].original_video_point);
         let bounced = false;
         const walls_indexes = check_walls_intersection_indexes(object_after_update, walls);
         if (walls_indexes.length > 0) {
@@ -129,10 +128,7 @@ const WebcamOnCanvas = () => {
         indexes_order.push(min_ind);
       }
       for (let i = 0; i < objects.length; i++) {
-        const ind = indexes_order[i]
-        const rect = objects[ind].rect;
-        const tl = tl_points[ind];
-        draw_part(video, ctx, rect.tl.x, rect.tl.y, tl.x, tl.y, rect.width, rect.height);
+        objects[indexes_order[i]].draw(video, ctx);
       }
 
       //Draw closest side
@@ -231,7 +227,6 @@ const WebcamOnCanvas = () => {
               last_speeds[item.object_index].x = last_speeds[item.object_index].x - coef * (target.x - source.x);
               last_speeds[item.object_index].y = last_speeds[item.object_index].y - coef * (target.y - source.y);
             }
-
           }
         }
 
