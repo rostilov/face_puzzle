@@ -65,9 +65,6 @@ const WebcamOnCanvas = () => {
 
       // Some funny effect
       draw_circle_party(ctx, frameCount)
-      const draw_part = (video, ctx, to_x, to_y, part_start_x, part_start_y, part_width, part_height) => {
-        ctx.drawImage(video, part_start_x, part_start_y, part_width, part_height, to_x, to_y, part_width, part_height)
-      }
 
       if (!is_initialized) {
         [objects, last_speeds, walls] = initialization(width, height, vid_width, vid_height);

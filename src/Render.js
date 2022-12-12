@@ -2,6 +2,7 @@ import { Point, Rect } from './Geometry';
 import { Wall } from './Physics';
 import { canvas_arrow } from './DrawUtils';
 import { SceneObject } from './SceneObject';
+import { CompoundSceneObject } from './CompoundSceneObject';
 
 export class ObjectsState {
   constructor() {
@@ -29,6 +30,10 @@ export function initialization(width, height, vid_width, vid_height) {
     objects.push(new SceneObject(last_rects[i], tl_points[i]))
   }
 
+  let objects2 = [];
+  for (let i = 0; i < objects.length; i++) {
+    objects2.push(new CompoundSceneObject([objects[i]]))
+  }
   let last_speeds = [];
 
   last_speeds.push(new Point(0, 0));
