@@ -127,8 +127,56 @@ const WebcamOnCanvas = () => {
       //Draw closest side
 
 
+      const draw_line = (from, to, col) => {
+        ctx.beginPath();
+        ctx.moveTo(from.x, from.y);
+        ctx.lineTo(to.x, to.y);
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = col;
+        ctx.stroke();
+      };
+      if (min_ind !== -1) {
+        let min_dist = 1000000000000.
+        let min_indexes_info = [];
+        let min_object_index = -1;
+        for (let i = 0; i < objects.length; i++) {
+          if (i === min_ind) {
+            continue;
+          }
 
 
+          // min_pair = [{ 'object_index': i, 'side_index': closest_indexes[0] }, { 'object_index': j, 'side_index': closest_indexes[1] }];
+
+          const [closest_indexes_info, closest_dist] = objects[min_ind].get_closest(objects[i]);
+          if (closest_dist < min_dist) {
+            min_dist = closest_dist;
+            min_indexes_info = closest_indexes_info;
+            min_object_index = i;
+          }
+        }
+
+        const get_side = (index, item) => {
+          const sides = objects[index].objects[item.object_index].rect.get_sides();
+          const side = sides[item.side_index];
+          return side;
+        };
+
+        const draw_side = (index, item) => {
+          const side = get_side(index, item);
+          draw_line(side[0], side[1], 'rgb(0, 255, 0)');
+        };
+
+        const target_side = get_side(min_ind, min_indexes_info[0]);
+        const source_side = get_side(min_object_index, min_indexes_info[1]);
+
+        const target_center = target_side[0].add(target_side[1]).scale(0.5);
+        const source_center = source_side[0].add(source_side[1]).scale(0.5);
+        const shift_vector = target_center.add(source_center.scale(-1));
+        draw_side(min_ind, min_indexes_info[0]);
+        draw_side(min_object_index, min_indexes_info[1]);
+
+        last_speeds[min_object_index] = last_speeds[min_object_index].add(shift_vector.scale(0.0005));
+      }
       // if (min_ind !== -1) {
       //   class ObjectSide {
       //     constructor(x, y) {

@@ -58,12 +58,6 @@ export class CompoundSceneObject {
           min_dist = closest_dist;
           min_pair = [{ 'object_index': i, 'side_index': closest_indexes[0] }, { 'object_index': j, 'side_index': closest_indexes[1] }];
         }
-        if (lhs.get_closest(rhs)) {
-
-        }
-        if (lhs.is_intersecting(rhs)) {
-          return true;
-        }
       }
     }
 
