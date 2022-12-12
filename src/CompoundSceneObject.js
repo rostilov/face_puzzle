@@ -18,6 +18,16 @@ export class CompoundSceneObject {
     for (let i = 0; i < this.objects.length; i++) {
       objects.push(this.objects[i].deep_copy());
     }
+    const [closest_indexes_info, closest_dist] = this.get_closest(object);
+    const get_side = (obj, item) => {
+      const sides = obj.objects[item.object_index].rect.get_sides();
+      const side = sides[item.side_index];
+      return side;
+    };
+    const target_point = get_side(this, closest_indexes_info[0])[0];
+    const source_point = get_side(object, closest_indexes_info[1])[1];
+    const shift = target_point.add(source_point.scale(-1.));
+    object = object.translate(shift);
     for (let i = 0; i < object.objects.length; i++) {
       objects.push(object.objects[i].deep_copy());
     }
