@@ -13,6 +13,17 @@ export class CompoundSceneObject {
     return new CompoundSceneObject(this.objects);
   }
 
+  merge(object) {
+    let objects = [];
+    for (let i = 0; i < this.objects.length; i++) {
+      objects.push(this.objects[i].deep_copy());
+    }
+    for (let i = 0; i < object.objects.length; i++) {
+      objects.push(object.objects[i].deep_copy());
+    }
+    return new CompoundSceneObject(objects);
+  }
+
   is_intersecting(object) {
     return this.#is_intersecting_not_symmetric(object) || object.#is_intersecting_not_symmetric(this)
   }

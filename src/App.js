@@ -4,6 +4,19 @@ import { initialization } from './Render';
 import { draw_circle_party, draw_sector_line } from './DrawUtils';
 import { down_callback, move_callback, MouseState } from './MouseCallbacks';
 import { check_walls_intersection_indexes, check_objects_intersection_indexes } from './Render';
+import { Point } from './Geometry';
+
+function deletete_two_indexes(items, i, j) {
+  let result = []
+  for (let index = 0; index < items.length; index++) {
+    if ((i === index) || (j === index)) {
+      continue;
+    }
+    result.push(items[index].deep_copy());
+  }
+  return result;
+}
+
 const WebcamOnCanvas = () => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -154,28 +167,42 @@ const WebcamOnCanvas = () => {
             min_object_index = i;
           }
         }
+        if (min_object_index !== -1) {
+          const get_side = (index, item) => {
+            const sides = objects[index].objects[item.object_index].rect.get_sides();
+            const side = sides[item.side_index];
+            return side;
+          };
 
-        const get_side = (index, item) => {
-          const sides = objects[index].objects[item.object_index].rect.get_sides();
-          const side = sides[item.side_index];
-          return side;
-        };
+          const draw_side = (index, item) => {
+            const side = get_side(index, item);
+            draw_line(side[0], side[1], 'rgb(0, 255, 0)');
+          };
 
-        const draw_side = (index, item) => {
-          const side = get_side(index, item);
-          draw_line(side[0], side[1], 'rgb(0, 255, 0)');
-        };
+          const target_side = get_side(min_ind, min_indexes_info[0]);
+          const source_side = get_side(min_object_index, min_indexes_info[1]);
 
-        const target_side = get_side(min_ind, min_indexes_info[0]);
-        const source_side = get_side(min_object_index, min_indexes_info[1]);
+          const target_center = target_side[0].add(target_side[1]).scale(0.5);
+          const source_center = source_side[0].add(source_side[1]).scale(0.5);
+          const shift_vector = target_center.add(source_center.scale(-1));
+          draw_side(min_ind, min_indexes_info[0]);
+          draw_side(min_object_index, min_indexes_info[1]);
 
-        const target_center = target_side[0].add(target_side[1]).scale(0.5);
-        const source_center = source_side[0].add(source_side[1]).scale(0.5);
-        const shift_vector = target_center.add(source_center.scale(-1));
-        draw_side(min_ind, min_indexes_info[0]);
-        draw_side(min_object_index, min_indexes_info[1]);
+          last_speeds[min_object_index] = last_speeds[min_object_index].add(shift_vector.scale(0.0005));
+          if (min_dist < 10.) {
+            const merged = objects[min_ind].merge(objects[min_object_index]);
+            let new_objects = deletete_two_indexes(objects, min_ind, min_object_index);
+            let new_speeds = deletete_two_indexes(last_speeds, min_ind, min_object_index);
+            new_objects.push(merged);
+            new_speeds.push(new Point(0, 0));
 
-        last_speeds[min_object_index] = last_speeds[min_object_index].add(shift_vector.scale(0.0005));
+            last_speeds = new_speeds;
+            objects = new_objects;
+            min_ind = objects.length - 1;
+          }
+        }
+
+        // console.log(min_dist)
       }
       // if (min_ind !== -1) {
       //   class ObjectSide {
