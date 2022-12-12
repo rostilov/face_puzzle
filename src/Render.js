@@ -49,15 +49,19 @@ export function initialization(width, height, vid_width, vid_height) {
 
 
 
-  return [objects, last_speeds, walls];
+  return [objects2, last_speeds, walls];
 }
 
 export function check_walls_intersection_indexes(object, walls) {
   let result = []
   for (let j = 0; j < walls.length; j++) {
-    if (walls[j].is_intersecting(object.rect)) {
-      result.push(j);
+    for (let i = 0; i < object.objects.length; i++) {
+      if (walls[j].is_intersecting(object.objects[i].rect)) {
+        result.push(j);
+        break;
+      }
     }
+
   }
   return result;
 }

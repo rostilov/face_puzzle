@@ -47,6 +47,7 @@ export class Rect {
     this.tl.x = this.tl.x + shift_vector.x;
     this.tl.y = this.tl.y + shift_vector.y;
   }
+
   is_point_inside(point) {
     return (this.tl.x <= point.x) && (this.tl.x + this.width >= point.x) && (this.tl.y <= point.y) && (this.tl.y + this.height >= point.y);
   }

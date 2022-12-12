@@ -17,6 +17,34 @@ export class CompoundSceneObject {
     return this.#is_intersecting_not_symmetric(object) || object.#is_intersecting_not_symmetric(this)
   }
 
+  dist(point) {
+    let min_dist = 100000000000;
+    for (let i = 0; i < this.objects.length; i++) {
+      const dist = this.objects[i].dist(point);
+      if (dist < min_dist) {
+        min_dist = dist;
+      }
+    }
+    return min_dist;
+  }
+
+  translate(shift) {
+    let objects = [];
+    for (let i = 0; i < this.objects.length; i++) {
+      objects.push(this.objects[i].translate(shift));
+    }
+    return new CompoundSceneObject(objects);
+  }
+
+  is_point_inside(point) {
+    for (let i = 0; i < this.objects.length; i++) {
+      if (this.objects[i].is_point_inside(point)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   get_closest(object) {
     let min_pair = [];
     let min_dist = 100000000000;

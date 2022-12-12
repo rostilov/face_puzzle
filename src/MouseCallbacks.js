@@ -1,8 +1,7 @@
 import { Point } from './Geometry';
-import { SceneObject } from './SceneObject';
 import { check_walls_intersection_indexes, check_objects_intersection_indexes } from './Render';
 
-const MAX_ALLOWED_SPEED = 30.
+const MAX_ALLOWED_SPEED = 20.
 export class MouseState {
   constructor() {
     this.last_clicked_x = 0;
@@ -18,15 +17,13 @@ export function down_callback(state, canvasoffsetLeft, canvasoffsetTop, x, y, ob
   let min_dist = 1000000000000;
   let min_ind = -1;
   for (let i = 0; i < objects.length; i++) {
-    const d_x = (objects[i].rect.tl.x + (objects[i].rect.width / 2) - img_x);
-    const d_y = (objects[i].rect.tl.y + (objects[i].rect.height / 2) - img_y);
-    const dist = d_x * d_x + d_y * d_y;
+    const dist = objects[i].dist(new Point(img_x, img_y));
     if (dist < min_dist) {
       min_dist = dist;
       min_ind = i;
     }
   }
-  if (objects[min_ind].rect.is_point_inside(new Point(img_x, img_y))) {
+  if (objects[min_ind].is_point_inside(new Point(img_x, img_y))) {
     state.is_moving = true;
     state.last_clicked_x = x;
     state.last_clicked_y = y;
@@ -52,16 +49,12 @@ export function move_callback(state, x, y, objects, last_speeds, walls, min_ind)
   const trimmed_speed = speed.scale(1 / scale);
 
   if (min_ind !== -1) {
-    let after_update_rect = objects[min_ind].rect.deep_copy();
-    after_update_rect.translate(speed);
-    const object_after_update = new SceneObject(after_update_rect, objects[min_ind].original_video_point);
+
+    const object_after_update = objects[min_ind].translate(speed);
 
     let is_intersecting = false;
-    for (let j = 0; j < walls.length; j++) {
-      if (walls[j].is_intersecting(after_update_rect)) {
-        is_intersecting = true;
-        break;
-      }
+    if (check_walls_intersection_indexes(object_after_update, walls).length > 0) {
+      is_intersecting = true;
     }
 
     if (!is_intersecting) {
@@ -71,9 +64,7 @@ export function move_callback(state, x, y, objects, last_speeds, walls, min_ind)
           continue;
         }
         if (objects[j].is_intersecting(object_after_update)) {
-          let object_after_shift = objects[j].deep_copy();
-          object_after_shift.rect.translate(speed);
-
+          let object_after_shift = objects[j].translate(speed);
 
           const walls_indexes = check_walls_intersection_indexes(object_after_shift, walls);
           if (walls_indexes.length > 0) {
@@ -100,7 +91,7 @@ export function move_callback(state, x, y, objects, last_speeds, walls, min_ind)
     if (is_intersecting) {
       last_speeds[min_ind] = new Point(0, 0);
     } else {
-      objects[min_ind].rect = after_update_rect;
+      objects[min_ind] = object_after_update;
       last_speeds[min_ind] = trimmed_speed;
     }
   }

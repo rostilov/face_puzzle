@@ -17,6 +17,22 @@ export class SceneObject {
     return this.#is_intersecting_not_symmetric(object) || object.#is_intersecting_not_symmetric(this)
   }
 
+  dist(point) {
+    const d_x = (this.rect.tl.x + (this.rect.width / 2) - point.x);
+    const d_y = (this.rect.tl.y + (this.rect.height / 2) - point.y);
+    return Math.sqrt(d_x * d_x + d_y * d_y);
+  }
+
+  is_point_inside(point) {
+    return this.rect.is_point_inside(point);
+  }
+
+  translate(vector) {
+    let after_update_rect = this.rect.deep_copy();
+    after_update_rect.translate(vector);
+    return new SceneObject(after_update_rect, this.original_video_point);
+  }
+
   get_closest(object) {
     const obj_sides = object.rect.get_sides();
     const sides = this.rect.get_sides();
