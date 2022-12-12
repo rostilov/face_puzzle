@@ -35,6 +35,10 @@ export class Rect {
     return new Rect(this.tl.x, this.tl.y, this.width, this.height);
   }
 
+  get_center() {
+    return new Point(this.tl.x + (this.width / 2), this.tl.y + (this.height / 2))
+  }
+
   translate(shift_vector) {
     this.tl.x = this.tl.x + shift_vector.x;
     this.tl.y = this.tl.y + shift_vector.y;

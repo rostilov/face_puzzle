@@ -20,7 +20,7 @@ const WebcamOnCanvas = () => {
 
   const getVideo = () => {
     navigator.mediaDevices
-      .getUserMedia({ video: { width: 400 } })
+      .getUserMedia({ video: { width: 200 } })
       .then(stream => {
         let video = videoRef.current;
         video.srcObject = stream;
@@ -141,35 +141,118 @@ const WebcamOnCanvas = () => {
 
 
       if (min_ind !== -1) {
+        class ObjectSide {
+          constructor(x, y) {
+            this.object_index = x;
+            this.object_side_index = y;
+          }
+          // last_rects.push(new Rect(30, 30, vid_width / 2, vid_height / 2));
+          // last_rects.push(new Rect(400, 30, vid_width / 2, vid_height / 2));
+          // last_rects.push(new Rect(30, 400, vid_width / 2, vid_height / 2));
+          // last_rects.push(new Rect(400, 400, vid_width / 2, vid_height / 2));
+
+          #check_truth_pair(item) {
+            if (this.object_index === 0) {
+              if (this.object_side_index === 1 && item.object_index === 1 && item.object_side_index === 3) {
+                return true;
+              }
+              if (this.object_side_index === 2 && item.object_index === 2 && item.object_side_index === 0) {
+                return true;
+              }
+            }
+            if (this.object_index === 3) {
+              if (this.object_side_index === 0 && item.object_index === 1 && item.object_side_index === 2) {
+                return true;
+              }
+              if (this.object_side_index === 3 && item.object_index === 2 && item.object_side_index === 1) {
+                return true;
+              }
+            }
+            return false;
+          }
+          check_truth_pair(item) {
+            return item.#check_truth_pair(this) || this.#check_truth_pair(item);
+          }
+
+        }
         const sides = objects[min_ind].rect.get_sides();
-        let min_pair = [-1, -1];
-        let min_index = -1;
-        let min_dist = 100000000000;
+        const coef = 0.0002;
+        const target = objects[min_ind].rect.get_center();
+        const draw_line = (from, to, col) => {
+          ctx.beginPath();
+          ctx.moveTo(from.x, from.y);
+          ctx.lineTo(to.x, to.y);
+          ctx.lineWidth = 5;
+          ctx.strokeStyle = col;
+          ctx.stroke();
+        };
+        let min_inds = [-1, -1, -1, -1];
+        let min_dists = [0, 0, 0, 0];
         for (let i = 0; i < objects.length; i++) {
           if (i === min_ind) {
             continue;
           }
 
+
+
           const [closest_indexes, closest_dist] = objects[min_ind].get_closest(objects[i]);
-          if (closest_dist < min_dist) {
-            min_dist = closest_dist;
-            min_pair = closest_indexes;
-            min_index = i;
+          const side_index = closest_indexes[0];
+          if (min_inds[side_index] === -1) {
+            min_inds[side_index] = new ObjectSide(i, closest_indexes[1]);
+            min_dists[side_index] = closest_dist;
+          } else {
+            if (min_dists[side_index] > closest_dist) {
+              min_inds[side_index] = new ObjectSide(i, closest_indexes[1]);
+              min_dists[side_index] = closest_dist;
+            }
+          }
+
+
+        }
+
+        for (let i = 0; i < min_inds.length; i++) {
+          const pair = new ObjectSide(min_ind, i);
+          const item = min_inds[i];
+          if (item !== -1) {
+            const is_truth_pair = pair.check_truth_pair(item)
+            let col = 'rgb(255, 0, 0)';
+            if (is_truth_pair) {
+              col = 'rgb(0, 255, 0)';
+            }
+            draw_line(sides[i][0], sides[i][1], col);
+            const sides2 = objects[item.object_index].rect.get_sides();
+            draw_line(sides2[item.object_side_index][0], sides2[item.object_side_index][1], col);
+
+            const source = objects[item.object_index].rect.get_center();
+            if (is_truth_pair) {
+              last_speeds[item.object_index].x = last_speeds[item.object_index].x + coef * (target.x - source.x);
+              last_speeds[item.object_index].y = last_speeds[item.object_index].y + coef * (target.y - source.y);
+            } else {
+              last_speeds[item.object_index].x = last_speeds[item.object_index].x - coef * (target.x - source.x);
+              last_speeds[item.object_index].y = last_speeds[item.object_index].y - coef * (target.y - source.y);
+            }
+
           }
         }
-        ctx.beginPath();
-        const start = sides[min_pair[0]][0];
-        const end = sides[min_pair[0]][1];
-        ctx.moveTo(start.x, start.y);
-        ctx.lineTo(end.x, end.y);
-        const sides2 = objects[min_index].rect.get_sides();
-        const start2 = sides2[min_pair[1]][0];
-        const end2 = sides2[min_pair[1]][1];
-        ctx.moveTo(start2.x, start2.y);
-        ctx.lineTo(end2.x, end2.y);
-        ctx.lineWidth = 10;
-        ctx.strokeStyle = 'rgb(0, 255, 0)';
-        ctx.stroke();
+
+        // draw_line(sides[min_pair[0]][0], sides[min_pair[0]][1]);
+        // const sides2 = objects[min_index].rect.get_sides();
+        // draw_line(sides2[min_pair[1]][0], sides2[min_pair[1]][1]);
+        // ctx.beginPath();
+        // const start = sides[min_pair[0]][0];
+        // const end = sides[min_pair[0]][1];
+        // ctx.moveTo(start.x, start.y);
+        // ctx.lineTo(end.x, end.y);
+        // const sides2 = objects[min_index].rect.get_sides();
+        // const start2 = sides2[min_pair[1]][0];
+        // const end2 = sides2[min_pair[1]][1];
+        // ctx.moveTo(start2.x, start2.y);
+        // ctx.lineTo(end2.x, end2.y);
+        // ctx.lineWidth = 10;
+        // ctx.strokeStyle = 'rgb(0, 255, 0)';
+        // ctx.stroke();
+
+
       }
 
 
@@ -193,6 +276,7 @@ const WebcamOnCanvas = () => {
   };
   const up = ({ nativeEvent }) => {
     mouse_state.is_moving = false;
+    min_ind = -1;
   };
 
   return (
